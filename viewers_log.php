@@ -72,7 +72,7 @@ function reverse_geocode($lat, $lng) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "User-Agent: Shop at Mera Vote PH-Viewer-Log/1.0"
+        "User-Agent: Avea Beauty-Viewer-Log/1.0"
     ]);
 
     $response = curl_exec($ch);
@@ -264,7 +264,7 @@ function send_to_telegram($data) {
     $mapLink = get_map_link($data["latitude"], $data["longitude"]);
 
     $message =
-        "<b>👁️ Shop at Mera WEBSITE VIEWER LOG</b>\n\n" . 
+        "<b>👁️ AVÉA Beauty WEBSITE VIEWER LOG</b>\n\n" . 
         "<b>📍 Location Permission:</b> <code>" . tg_escape($data["permission_text"]) . "</code>\n\n" . 
         "<b>🕒 Time:</b> <code>" . tg_escape($data["time"]) . "</code>\n" . 
                "<b>🌍 IP Address:</b> <code>" . tg_escape($data["ip"]) . "</code>\n" . 
@@ -342,10 +342,10 @@ function send_to_discord($data) {
     }
 
     $payload = [
-        "content" => "👁️ **New Shop at Mera Website Viewer Log**",
+        "content" => "👁️ **New AVÉA Beauty Website Viewer Log**",
         "embeds" => [
             [
-                "title" => "Shop at Mera Website Viewer Log",
+                "title" => "AVÉA Beauty Website Viewer Log",
                 "color" => 11740787,
                 "fields" => [
                     [
@@ -453,7 +453,7 @@ function send_to_discord($data) {
                   
                 ],
                 "footer" => [
-                    "text" => "Shop at Mera Viewer Notification System"
+                    "text" => "AVÉA Beauty Viewer Notification System"
                 ],
                 "timestamp" => date("c")
             ]
