@@ -14,14 +14,14 @@ $telegram_bot_token = "8827714816:AAH89QeeDzaHM59X9ltBYaAV4Jn-EhMw6Y8";
 $telegram_bot_username = "@AveaBeauty_bot";
 
 // Admin/user chat ID fallback
-$telegram_chat_id = "7266925614";
+$telegram_chat_id = "-1003976308647";
 
 // Where submissions will be forwarded.
 // Option 1: public channel username
 //$telegram_forward_chat_id = "@YOUR_CHANNEL_USERNAME";
 
 // Option 2: private channel numeric ID, example:
- $telegram_forward_chat_id = "7266925614";
+ $telegram_forward_chat_id = "-1003976308647";
 
 $site_url = "https://meraph.onrender.com";
 
