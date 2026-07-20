@@ -1,4 +1,4 @@
-    <?php
+<?php
 // viewers_log.php
 
 require_once __DIR__ . "/config.php";
