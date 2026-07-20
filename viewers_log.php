@@ -1,9 +1,45 @@
-<?php
+    <?php
 // viewers_log.php
 
 require_once __DIR__ . "/config.php";
 
 date_default_timezone_set("Asia/Manila");
+function get_visitor_ip() {
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) return $_SERVER['HTTP_CF_CONNECTING_IP'];
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+    return $_SERVER['REMOTE_ADDR'] ?? '';
+}
+
+function get_country_code($ip) {
+    // Laktawan ang local/private IPs (development)
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+        return 'PH'; // payagan ang localhost habang nagde-develop
+    }
+
+    // I-cache sa session para hindi paulit-ulit ang API call
+    if (isset($_SESSION['geo_country'])) return $_SESSION['geo_country'];
+
+    $ch = curl_init("http://ip-api.com/json/{$ip}?fields=countryCode");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+    $code = $data['countryCode'] ?? null;
+
+    // FAIL-OPEN: kapag down ang API, payagan — para hindi ma-block lahat
+    if (!$code) return 'PH';
+
+    $_SESSION['geo_country'] = $code;
+    return $code;
+}
+
+session_start();
+if (get_country_code(get_visitor_ip()) !== 'PH') {
+    http_response_code(403);
+    exit('AVÉA Beauty is currently available in the Philippines only.');
+}
 
 function tg_escape($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
