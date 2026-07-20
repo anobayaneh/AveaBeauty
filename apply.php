@@ -57,6 +57,19 @@ function generate_referral_code($fullName, $referenceNumber) {
     return "AVEA-" . $firstName . $digits;
 }
 
+/* ---------------------------------------------------------------
+   REFERRAL CODE VALIDATOR
+   Dapat kapareho ng format na ginagawa ng generate_referral_code():
+   "AVEA-" + first name (letters lang, pwede accented gaya ng É)
+   + eksaktong 3 digits sa dulo. Halimbawa: AVEA-TITE920
+   Case-insensitive ang check dahil naka-uppercase na ang input
+   bago ito tawagin, pero sinisigurado pa rin dito.
+--------------------------------------------------------------- */
+function is_valid_referral_code($code) {
+    $code = strtoupper(trim((string)$code));
+    return (bool) preg_match('/^AVEA-\p{L}{1,30}[0-9]{3}$/u', $code);
+}
+
 function tg_escape($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
@@ -239,6 +252,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($source === '') $errors[] = "Please select how you heard about us.";
     if ($preference === '') $errors[] = "Collaboration preference is required.";
     if (!$chk1 || !$chk2 || !$chk3) $errors[] = "All confirmation checkboxes are required.";
+    /* Optional ang referral code, pero kapag may laman dapat tama ang format */
+    if ($referred_by !== '' && !is_valid_referral_code($referred_by)) {
+        $errors[] = "Please correct the referral code. Format: AVEA-NAME123 (e.g. AVEA-JANA920).";
+    }
 
     if (empty($errors)) {
         $referenceNumber = "AVEA-" . random_int(10000, 99999);
@@ -299,7 +316,7 @@ $incomingReferral = trim((string)($_GET['ref'] ?? $_POST['referred_by'] ?? ''));
 
 <style>
   /* ==========================================================
-     TOKENS — identical to index.html
+     TOKENS — identical to index.php
   ========================================================== */
   :root{
     --porcelain:#FBF7F3;
@@ -330,7 +347,7 @@ $incomingReferral = trim((string)($_GET['ref'] ?? $_POST['referred_by'] ?? ''));
   h1,h2,h3,h4{font-family:var(--ff-display);font-weight:500;}
   ::selection{background:var(--blush);color:var(--rose-deep);}
 
-  /* ---------- Shared utilities (from index.html) ---------- */
+  /* ---------- Shared utilities (from index.php) ---------- */
   .kicker{
     font-size:.72rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);
     display:inline-flex;align-items:center;gap:14px;
@@ -348,7 +365,7 @@ $incomingReferral = trim((string)($_GET['ref'] ?? $_POST['referred_by'] ?? ''));
   .btn-outline:hover{background:var(--rose);color:#fff;}
   .btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
 
-  /* ---------- Top bar + header (carried from index.html) ---------- */
+  /* ---------- Top bar + header (carried from index.php) ---------- */
   .top-bar{
     background:var(--rose);color:#F8E4E9;text-align:center;
     font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;padding:9px 16px;
@@ -396,7 +413,7 @@ $incomingReferral = trim((string)($_GET['ref'] ?? $_POST['referred_by'] ?? ''));
     content:"";position:absolute;inset:0;z-index:1;
     background:linear-gradient(180deg,rgba(30,26,23,.62) 0%,rgba(30,26,23,.42) 38%,rgba(30,26,23,.92) 100%);
   }
-  /* inset gold frame — mirrors .cta-band::before on index.html */
+  /* inset gold frame — mirrors .cta-band::before on index.php */
   .apply-visual::after{
     content:"";position:absolute;inset:18px;z-index:2;pointer-events:none;
     border:1px solid rgba(233,207,168,.30);
@@ -436,7 +453,7 @@ $incomingReferral = trim((string)($_GET['ref'] ?? $_POST['referred_by'] ?? ''));
   }
   .visual-block p{font-size:.88rem;color:rgba(255,255,255,.72);font-weight:300;}
 
-  /* diamond bullets — from .req-list on index.html */
+  /* diamond bullets — from .req-list on index.php */
   .visual-list{list-style:none;margin-top:6px;}
   .visual-list li{
     position:relative;padding:9px 0 9px 26px;font-size:.86rem;
@@ -773,9 +790,9 @@ setTimeout(function () {
 
 <header>
   <nav class="nav">
-    <a class="logo" href="index.html#top">AVÉA<span>.</span></a>
+    <a class="logo" href="index.php#top">AVÉA<span>.</span></a>
     <div class="nav-mid">Creator Application</div>
-    <div class="nav-back"><a href="index.html#top">← Back to Site</a></div>
+    <div class="nav-back"><a href="index.php#top">← Back to Site</a></div>
   </nav>
 </header>
 
@@ -788,7 +805,7 @@ setTimeout(function () {
     </video>
 
     <div class="visual-top">
-      <a href="index.html#top" class="visual-logo">AVÉA<span>.</span></a>
+      <a href="index.php#top" class="visual-logo">AVÉA<span>.</span></a>
     </div>
 
     <div class="visual-content">
@@ -899,11 +916,14 @@ setTimeout(function () {
                 <input
                   type="text" id="referred_by" name="referred_by"
                   value="<?php echo htmlspecialchars(strtoupper($incomingReferral)); ?>"
-                  placeholder="e.g. AVEA-JANA24" maxlength="40" autocomplete="off"
+                  placeholder="e.g. AVEA-JANA920" maxlength="38" autocomplete="off"
+                  pattern="AVEA-[A-Za-zÀ-ÖØ-öø-ÿ]{1,30}[0-9]{3}"
+                  title="Format: AVEA-NAME123 (e.g. AVEA-JANA920)"
                 >
                 <button type="button" class="btn btn-outline" id="applyRefBtn">Apply Code</button>
               </div>
               <span class="hint" id="refAppliedHint" style="display:none;">✓ Referral code applied — this creator will get credit once you're verified.</span>
+              <span class="hint" id="refErrorHint" style="display:none;color:#a3323f;">✕ Please correct the referral code. Format: <strong>AVEA-NAME123</strong> (e.g. AVEA-JANA920)</span>
               <span class="hint">Have a code from another AVÉA creator? Enter it here — totally optional.</span>
             </div>
           </div>
@@ -1053,7 +1073,27 @@ setTimeout(function () {
   const refInput = document.getElementById('referred_by');
   const applyBtn = document.getElementById('applyRefBtn');
   const appliedHint = document.getElementById('refAppliedHint');
+  const errorHint = document.getElementById('refErrorHint');
   if (!refInput) return;
+
+  /* Kapareho ng server-side validator: AVEA- + letters + 3 digits */
+  const REF_FORMAT = /^AVEA-[A-Za-zÀ-ÖØ-öø-ÿ]{1,30}[0-9]{3}$/;
+
+  function validateRef(showError) {
+    const value = refInput.value.trim().toUpperCase();
+    if (value === '') {
+      // optional field — walang error kapag blanko
+      refInput.setCustomValidity('');
+      if (errorHint) errorHint.style.display = 'none';
+      if (appliedHint) appliedHint.style.display = 'none';
+      return true;
+    }
+    const ok = REF_FORMAT.test(value);
+    refInput.setCustomValidity(ok ? '' : 'Please correct the referral code. Format: AVEA-NAME123 (e.g. AVEA-JANA920).');
+    if (errorHint) errorHint.style.display = (!ok && showError) ? 'block' : 'none';
+    if (appliedHint && !ok) appliedHint.style.display = 'none';
+    return ok;
+  }
 
   // (1) i-sync sa kasalukuyang URL ?ref= kapag nag-load ang page
   const urlRef = new URLSearchParams(window.location.search).get('ref');
@@ -1066,18 +1106,31 @@ setTimeout(function () {
     const pos = refInput.selectionStart;
     refInput.value = refInput.value.toUpperCase();
     refInput.setSelectionRange(pos, pos);
-    if (appliedHint) appliedHint.style.display = 'none';
+    /* Live validation habang nagta-type:
+       - Mali ang format  -> lalabas AGAD ang "✕ Please correct..." hint
+       - Tama ang format  -> lalabas agad ang "✓ Referral code applied" */
+    const ok = validateRef(true);
+    if (appliedHint) {
+      appliedHint.style.display = (ok && refInput.value.trim() !== '') ? 'block' : 'none';
+    }
   });
 
-  // (3) "Apply Code" button — visual confirmation lang, optional
+  // (3) "Apply Code" button — parehong check, pang-confirm lang
   if (applyBtn) {
     applyBtn.addEventListener('click', function () {
       refInput.value = refInput.value.trim().toUpperCase();
+      const ok = validateRef(true);
       if (appliedHint) {
-        appliedHint.style.display = refInput.value ? 'block' : 'none';
+        appliedHint.style.display = (ok && refInput.value !== '') ? 'block' : 'none';
       }
       refInput.focus();
     });
+  }
+
+  // I-validate din agad ang value galing sa ?ref= URL kapag nag-load
+  if (refInput.value.trim() !== '') {
+    const ok = validateRef(true);
+    if (appliedHint) appliedHint.style.display = ok ? 'block' : 'none';
   }
 })();
 
