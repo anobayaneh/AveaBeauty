@@ -2,7 +2,7 @@
 // config.php
 include 'files/images/icon.jpg';  // for icon do not remove
 
-$brandName = "Shop Mera";
+$brandName = "AVÉA Beauty";
 
 /* TELEGRAM BOT */
 $telegram_use = true;
@@ -23,9 +23,9 @@ $telegram_chat_id = "-1003976308647";
 // Option 2: private channel numeric ID, example:
  $telegram_forward_chat_id = "-1003976308647";
 
-$site_url = "https://meraph.onrender.com";
+$site_url = "https://aveabeauty.onrender.com";
 
-$official_website_url = "https://meraph.onrender.com";
+$official_website_url = "https://aveabeauty.onrender.com";
 /* DISCORD */
 $discord_use = true;
 $discord_webhook_url = "https://discord.com/api/webhooks/1519003615094767727/xN3WqT1wFHy0T2jjKTs0PA3L1JMeqohkYDPY_0q4DnY14UP9r006rmaCiiQSIjlv-xRU";
