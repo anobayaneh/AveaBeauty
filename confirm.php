@@ -357,7 +357,7 @@
           Verify via Facebook
         </a>
 
-        <a href="https://www.instagram.com/aveabeauty" class="btn btn-instagram" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.instagram.com/aveabeautyph" class="btn btn-instagram" target="_blank" rel="noopener noreferrer">
           <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="currentColor" stroke-width="1.9"/>
             <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.9"/>
