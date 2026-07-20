@@ -2,43 +2,48 @@
 /* ===============================================================
    AVÉA BEAUTY — GEO RESTRICTION (Philippines only)
    ---------------------------------------------------------------
-   Paggamit: ilagay ang linyang ito sa PINAKATAAS ng index.php,
-   apply.php, at confirm.php — bago ang anumang output:
- 
-       require __DIR__ . '/geo-check.php';
- 
-   Kung sa index.php lang ito, madaling ma-direct access ng iba
-   ang apply.php, kaya lahat ng public pages dapat may require.
+   READY TO COPY-PASTE.
+
+   I-paste ang BUONG block na ito sa PINAKATAAS ng index.php —
+   ang "<?php" sa itaas ay dapat ang UNANG-UNANG karakter ng file.
+   Walang espasyo, walang blankong linya, walang HTML bago nito,
+   kung hindi ay "headers already sent" ang error.
+
+   Kung may sarili nang "<?php" ang index.php mo, tanggalin mo ang
+   pangalawang "<?php" at pagsamahin na lang sa iisang block.
+
+   Gawin din ito sa apply.php at confirm.php — kung index.php lang
+   ang protektado, puwedeng i-direct access ng iba ang apply.php.
 =============================================================== */
- 
+
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params(['path' => '/']);
     session_start();
 }
- 
+
 $geoAllowedCountries = ['PH'];
 $geoCacheHours       = 6;
- 
+
 function geo_visitor_ip() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) return $_SERVER['HTTP_CF_CONNECTING_IP'];
     if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
     return $_SERVER['REMOTE_ADDR'] ?? '';
 }
- 
+
 function geo_country_code($ip) {
     global $geoCacheHours;
- 
+
     /* 1. Cloudflare — pinakamabilis, walang API call.
           I-enable sa dashboard: Rules -> Settings -> IP Geolocation */
     if (!empty($_SERVER['HTTP_CF_IPCOUNTRY']) && $_SERVER['HTTP_CF_IPCOUNTRY'] !== 'XX') {
         return strtoupper($_SERVER['HTTP_CF_IPCOUNTRY']);
     }
- 
+
     /* 2. Private/local IP — development, palaging payagan */
     if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
         return 'PH';
     }
- 
+
     /* 3. Session cache — may expiry at naka-tie sa IP, kaya kapag
           nagpalit ng network ang user, muling chine-check. */
     if (
@@ -48,7 +53,7 @@ function geo_country_code($ip) {
     ) {
         return $_SESSION['geo_country'];
     }
- 
+
     /* 4. Lookup */
     $ch = curl_init("http://ip-api.com/json/" . urlencode($ip) . "?fields=status,countryCode");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -56,33 +61,151 @@ function geo_country_code($ip) {
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
     $response = curl_exec($ch);
     curl_close($ch);
- 
+
     $data = json_decode((string)$response, true);
     $code = (isset($data['status']) && $data['status'] === 'success')
         ? ($data['countryCode'] ?? null)
         : null;
- 
+
     /* FAIL-OPEN: kapag down o timeout ang API, payagan — mas mabuti
        nang makapasok ang iilang dayuhan kaysa ma-block ang lahat ng
        lehitimong Pinoy applicant dahil sa isang outage.
        Gawing 'XX' ito kung fail-CLOSED ang gusto mo. */
     if (!$code) return 'PH';
- 
+
     $_SESSION['geo_country'] = $code;
     $_SESSION['geo_ip']      = $ip;
     $_SESSION['geo_time']    = time();
- 
+
     return $code;
 }
- 
+
 $geoCountry = geo_country_code(geo_visitor_ip());
- 
+
 if (!in_array($geoCountry, $geoAllowedCountries, true)) {
+
     http_response_code(403);
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
+
+    /* Nowdoc (<<<'HTML') — walang PHP parsing sa loob, kaya ligtas
+       ang lahat ng CSS braces at quotes. Ang HTML; sa dulo ay dapat
+       nasa simula mismo ng linya, walang espasyo sa unahan. */
+    echo <<<'HTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Not Available in Your Region | AVÉA Beauty</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FBF7F3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="files/images/avealogo.png" type="image/png">
+<style>
+  :root{
+    --porcelain:#FBF7F3; --sand:#F1EAE1; --hairline:#E4DACE;
+    --gold:#B08D57; --gold-light:#E9CFA8;
+    --rose:#8E3A4B; --rose-deep:#6C2A38;
+    --ink:#1E1A17; --muted:#7B6E64;
+    --ff-display:'Cormorant Garamond', serif;
+    --ff-body:'Jost', sans-serif;
   }
-    ?>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:var(--ff-body); background:var(--porcelain); color:var(--ink);
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:32px 20px; line-height:1.7; -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(233,207,168,.28), transparent 42%),
+      radial-gradient(circle at 88% 82%, rgba(239,221,225,.42), transparent 45%);
+  }
+  .card{
+    position:relative; max-width:560px; width:100%; text-align:center;
+    background:rgba(255,255,255,.7); backdrop-filter:blur(8px);
+    border:1px solid var(--hairline); padding:clamp(40px,7vw,68px) clamp(26px,5vw,54px);
+    animation:rise .9s cubic-bezier(.22,.8,.28,1) both;
+  }
+  /* inset gold frame — same signature as the apply page */
+  .card::after{
+    content:""; position:absolute; inset:10px; pointer-events:none;
+    border:1px solid rgba(176,141,87,.28);
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){ .card{animation:none;} }
+
+  .logo{
+    font-family:var(--ff-display); font-size:1.7rem; letter-spacing:.26em;
+    color:var(--ink); margin-bottom:34px;
+  }
+  .logo span{color:var(--gold); font-style:italic;}
+
+  .kicker{
+    display:inline-flex; align-items:center; gap:12px;
+    font-size:.68rem; font-weight:500; letter-spacing:.32em;
+    text-transform:uppercase; color:var(--gold); margin-bottom:20px;
+  }
+  .kicker::before,.kicker::after{content:""; height:1px; width:22px; background:var(--gold); opacity:.55;}
+
+  h1{
+    font-family:var(--ff-display); font-weight:500;
+    font-size:clamp(1.9rem,5.2vw,2.6rem); line-height:1.2; margin-bottom:18px;
+  }
+  h1 em{font-style:italic; color:var(--rose);}
+
+  p{color:var(--muted); font-weight:300; font-size:.97rem; max-width:42ch; margin:0 auto;}
+
+  .rule{height:1px; background:var(--hairline); margin:32px auto; max-width:80px;}
+
+  .note{
+    font-size:.82rem; color:var(--muted);
+    background:var(--sand); border-left:2px solid var(--gold-light);
+    padding:14px 18px; text-align:left; margin-top:8px;
+  }
+
+  .contact{margin-top:30px; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase;}
+  .contact a{
+    color:var(--rose); text-decoration:none;
+    border-bottom:1px solid var(--gold); padding-bottom:3px;
+    transition:letter-spacing .25s ease, color .25s ease;
+  }
+  .contact a:hover,.contact a:focus-visible{letter-spacing:.26em; color:var(--rose-deep);}
+  a:focus-visible{outline:2px solid var(--gold); outline-offset:4px;}
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="logo">AV<span>É</span>A</div>
+
+    <span class="kicker">Region Notice</span>
+
+    <h1>Our creator programme is <em>Philippines-only</em></h1>
+
+    <p>
+      AVÉA Beauty ships products and runs campaigns within the Philippines,
+      so applications are open to creators based there.
+    </p>
+
+    <div class="rule"></div>
+
+    <p class="note">
+      Nasa Pilipinas ka pero nakikita mo ito? Malamang naka-VPN ka o proxy ang
+      network mo. I-off ito, tapos i-refresh ang page.
+    </p>
+
+    <p class="contact">
+      <a href="mailto:hello@aveabeauty.com">Email us</a>
+    </p>
+  </main>
+</body>
+</html>
+HTML;
+
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
