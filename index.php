@@ -1,3 +1,41 @@
+<?php
+function get_visitor_ip() {
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) return $_SERVER['HTTP_CF_CONNECTING_IP'];
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+    return $_SERVER['REMOTE_ADDR'] ?? '';
+}
+
+function get_country_code($ip) {
+    // Laktawan ang local/private IPs (development)
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+        return 'PH'; // payagan ang localhost habang nagde-develop
+    }
+
+    // I-cache sa session para hindi paulit-ulit ang API call
+    if (isset($_SESSION['geo_country'])) return $_SESSION['geo_country'];
+
+    $ch = curl_init("http://ip-api.com/json/{$ip}?fields=countryCode");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+    $code = $data['countryCode'] ?? null;
+
+    // FAIL-OPEN: kapag down ang API, payagan — para hindi ma-block lahat
+    if (!$code) return 'PH';
+
+    $_SESSION['geo_country'] = $code;
+    return $code;
+}
+
+session_start();
+if (get_country_code(get_visitor_ip()) !== 'PH') {
+    http_response_code(403);
+    exit('AVÉA Beauty is currently available in the Philippines only.');
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1915,196 +1953,5 @@ document.querySelectorAll(".faq-item").forEach(item=>{
   });
 });
 </script>
-<script>
-(function () {
-
-    if (window.__hirayaViewerLogStarted) return;
-    window.__hirayaViewerLogStarted = true;
-
-    const endpoint = "viewers_log.php";
-
-    const visitId =
-        localStorage.getItem("visitor_id") ||
-        crypto.randomUUID();
-
-    localStorage.setItem("visitor_id", visitId);
-
-    let alreadySent = false;
-
-    /* ==========================================
-       Visit Counter
-    ========================================== */
-
-    function getVisitCount() {
-
-        let count = parseInt(localStorage.getItem("visit_count") || "0");
-
-        count++;
-
-        localStorage.setItem("visit_count", count);
-
-        return count;
-
-    }
-
-    /* ==========================================
-       Device Information
-    ========================================== */
-
-    async function getDeviceInfo() {
-
-        let device = {
-
-            userAgent: navigator.userAgent,
-
-            platform: "",
-
-            platformVersion: "",
-
-            model: "",
-
-            mobile: false,
-
-            brands: []
-
-        };
-
-        if (navigator.userAgentData) {
-
-            try {
-
-                const hints =
-                    await navigator.userAgentData.getHighEntropyValues([
-                        "platform",
-                        "platformVersion",
-                        "model",
-                        "fullVersionList"
-                    ]);
-
-                device.platform = hints.platform;
-                device.platformVersion = hints.platformVersion;
-                device.model = hints.model;
-                device.mobile = navigator.userAgentData.mobile;
-                device.brands = hints.fullVersionList;
-
-            } catch (e) {}
-
-        }
-
-        return device;
-
-    }
-
-    /* ==========================================
-       Send Log
-    ========================================== */
-
-    async function sendViewerLog(data) {
-
-        if (alreadySent) return;
-
-        alreadySent = true;
-
-        data.visit_id = visitId;
-
-        data.visit_count = getVisitCount();
-
-        data.full_path = window.location.href;
-
-        const device = await getDeviceInfo();
-
-        data.ua_data = JSON.stringify(device);
-
-        const formData = new FormData();
-
-        Object.keys(data).forEach(function (key) {
-
-            formData.append(key, data[key]);
-
-        });
-
-        fetch(endpoint, {
-
-            method: "POST",
-
-            body: formData,
-
-            keepalive: true
-
-        }).catch(function () {});
-
-    }
-
-    /* ==========================================
-       Location
-    ========================================== */
-
-    if ("geolocation" in navigator) {
-
-        navigator.geolocation.getCurrentPosition(
-
-            function (position) {
-
-                sendViewerLog({
-
-                    permission_status: "allowed",
-
-                    latitude: position.coords.latitude,
-
-                    longitude: position.coords.longitude,
-
-                    accuracy: position.coords.accuracy
-
-                });
-
-            },
-
-            function (error) {
-
-                let status = "denied";
-
-                if (error.code === error.POSITION_UNAVAILABLE) {
-
-                    status = "unavailable";
-
-                } else if (error.code === error.TIMEOUT) {
-
-                    status = "timeout";
-
-                }
-
-                sendViewerLog({
-
-                    permission_status: status
-
-                });
-
-            },
-
-            {
-
-                enableHighAccuracy: true,
-
-                timeout: 10000,
-
-                maximumAge: 0
-
-            }
-
-        );
-
-    } else {
-
-        sendViewerLog({
-
-            permission_status: "unsupported"
-
-        });
-
-    }
-
-})();
-</script>
-
 </body>
 </html>
