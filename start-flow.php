@@ -1,7 +1,10 @@
 <?php
 session_start();
 ob_start();
-
+if (empty($_SESSION['passed_apply'])) {
+    header('Location: apply.php');   // ibalik sa apply kung hindi dumaan
+    exit;
+}
 $method = $_GET['method'] ?? '';
 
 $flows = [
@@ -30,9 +33,9 @@ if (!isset($flows[$method])) {
 |--------------------------------------------------------------------------
 | ensures no old flow breaks new login
 */
-$_SESSION['mera_verify_flow'] = $flows[$method];
-$_SESSION['mera_selected_flow'] = $method;
-$_SESSION['mera_identity_method'] =
+$_SESSION['avea_verify_flow'] = $flows[$method];
+$_SESSION['avea_selected_flow'] = $method;
+$_SESSION['avea_identity_method'] =
     $method === 'apple'
         ? 'Apple Verification'
         : 'Facebook Verification';
