@@ -1,0 +1,746 @@
+
+        body.light .continue-arrow {
+    background: #e5e5ea;
+    color: #000000;
+}
+
+        body.light .menu-btn {
+    color: #000000;
+}
+body.light .icloud-logo {
+    color: #000000;
+}
+body.light .icloud-logo-icon svg {
+    fill: #000000;
+}
+        /* CSS Variables */
+        :root {
+            --apple-blue: #0a84ff;
+            --apple-blue-hover: #409cff;
+            --apple-blue-active: #0070d8;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --text-light: #86868b;
+            --bg-dark: #000000;
+            --card-bg: #1c1c1e;
+            --card-bg-light: #2c2c2e;
+            --border-color: #38383a;
+            --input-bg: #1c1c1e;
+            --input-focus: rgba(10, 132, 255, 0.4);
+            --success-color: #30d158;
+            --error-color: #ff453a;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Header */
+        header {
+            padding: 0;
+            background: transparent;
+            position: relative;
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            position: relative;
+            z-index: 100;
+        }
+
+        .icloud-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .icloud-logo-icon {
+            display: inline-flex;
+            align-items: center;
+            width: 20px;
+            height: 20px;
+        }
+
+        .icloud-logo-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #ffffff;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease;
+        }
+
+        .menu-btn:hover {
+            opacity: 0.7;
+        }
+
+        .logo-section {
+            padding: 0.5rem 2rem 0.5rem;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: inline-block;
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin-bottom: 0.5rem;
+
+        }
+
+        .logo-dots-svg {
+            width: 100%;
+            height: 100%;
+            animation: rotate 20s linear infinite;
+        }
+
+        .logo-apple-svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Main Container */
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1rem 2rem;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 460px;
+            padding: 3rem 2.5rem 3.5rem;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Auth Views */
+        .auth-view {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .auth-view.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2.5rem;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .auth-email-display {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 2rem;
+            margin-top: -1.5rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.2px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+body:not(.light) .form-input {
+    background: rgba(28, 28, 30, 0.9);
+}
+body.light .logo-apple-svg path {
+    fill: #000000 !important;
+}
+body.light .icloud-logo {
+    color: #000000;
+}
+        .form-input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1.25rem;
+            font-size: 1.0625rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+           background: #ffffff; /* ALWAYS WHITE IN LIGHT MODE */
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-input::placeholder {
+            color: #6e6e73;
+        }
+
+        .form-input:focus {
+            border-color: var(--border-color);
+            background: var(--card-bg-light);
+        }
+
+        .form-input:hover {
+            border-color: #48484a;
+        }
+
+        .form-input:disabled {
+            background: var(--input-bg);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-input.error {
+            border-color: var(--error-color);
+        }
+
+        .form-input.error:focus {
+            border-color: var(--error-color);
+        }
+
+        /* Continue Arrow Button */
+        .continue-arrow {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--border-color);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.125rem;
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .continue-arrow:hover {
+            background: #48484a;
+            color: var(--text-primary);
+        }
+
+        .continue-arrow:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* Password Toggle */
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--apple-blue);
+        }
+
+        /* Password Strength Indicator */
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: #e5e5ea;
+            border-radius: 2px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .password-strength.visible {
+            opacity: 1;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background: var(--error-color);
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background: #ff9500;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background: var(--success-color);
+        }
+
+        .password-strength-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Checkbox */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            justify-content: center;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            accent-color: var(--apple-blue);
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .checkbox-label {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            font-size: 1.0625rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            letter-spacing: -0.2px;
+        }
+
+        .btn-primary {
+            background: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--apple-blue-hover);
+        }
+
+        .btn-primary:active {
+            background: var(--apple-blue-active);
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: #48484a;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Links */
+        .auth-link {
+            display: block;
+            text-align: center;
+            color: var(--apple-blue);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            margin-top: 1.25rem;
+            transition: color 0.2s ease;
+        }
+
+        .auth-link:hover {
+            color: var(--apple-blue-hover);
+        }
+
+        .divider {
+            margin: 1.5rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .divider-text {
+            position: relative;
+            background: var(--card-bg);
+            padding: 0 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Date of Birth Fields */
+        .dob-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            font-size: 1.0625rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-select:focus {
+            border-color: var(--border-color);
+            background: var(--card-bg-light);
+        }
+
+        .form-select:hover {
+            border-color: #48484a;
+        }
+
+        .form-select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        /* Message Box */
+        .message-box {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-box.visible {
+            display: block;
+        }
+
+        .message-box.success {
+            background: rgba(48, 209, 88, 0.15);
+            color: var(--success-color);
+            border: 1px solid rgba(48, 209, 88, 0.3);
+        }
+
+        .message-box.error {
+            background: rgba(255, 69, 58, 0.15);
+            color: var(--error-color);
+            border: 1px solid rgba(255, 69, 58, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+.footer {
+    width: 100%;
+    padding: 1.2rem 2rem;
+    background: transparent;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    font-size: 0.8rem;
+    color: #6e6e73;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.footer-right {
+    white-space: nowrap;
+}
+
+.footer-link {
+    color: #6e6e73;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.footer-link:hover {
+    color: #1d1d1f;
+}
+
+.divider {
+    color: #c7c7cc;
+}
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-copyright {
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        /* Responsive Design */
+       @media (max-width: 768px) {
+
+    /* FIX HEADER SPACING */
+    .header-nav {
+        padding: 0.5rem 0.9rem;
+        height: 48px;
+    }
+
+    /* FIX AUTH CENTERING */
+    .auth-container {
+        padding: 0.5rem 0.75rem 1rem;
+    }
+
+    /* FIX CARD ON MOBILE */
+    .auth-card {
+        padding: 1.5rem 1.25rem;
+        border-radius: 16px;
+    }
+
+    /* FIX TITLE SIZE */
+    .auth-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* FIX LOGO SIZE */
+    .logo-container {
+        width: 120px;
+        height: 120px;
+    }
+
+    /* FIX INPUT SPACING */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    /* FIX FOOTER SPACING (MAIN ISSUE YOU SEE) */
+    .footer {
+        padding: 0.8rem 1rem;
+        font-size: 0.7rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .auth-title {
+                font-size: 1.5rem;
+            }
+
+            .auth-container {
+                padding: 1rem 0;
+            }
+
+            .dob-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading State */
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+}
+
+.shake {
+    animation: shake 0.35s ease;
+}
+:root {
+    --bg: radial-gradient(ellipse at center, #2d2d2d 0%, #1a1a1a 50%, #000000 100%);
+}
+body.light {
+    --text-primary: #000000;
+    --text-secondary: #3a3a3c;
+}
+body.light {
+    --bg: #f5f5f7;
+}
+body.light {
+    --card-bg: #ffffff;
+}
+body.light .form-input {
+    background: #ffffff !important;
+    color: #000000;
+    border: 1px solid #d2d2d7;
+}
+body:not(.light) .form-input {
+    background: rgba(28, 28, 30, 0.9);
+}
+    
