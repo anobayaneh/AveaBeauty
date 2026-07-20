@@ -1,4 +1,3 @@
-check · PHP
 <?php
 /* ===============================================================
    AVÉA BEAUTY — GEO RESTRICTION (Philippines only)
@@ -82,6 +81,7 @@ if (!in_array($geoCountry, $geoAllowedCountries, true)) {
     http_response_code(403);
     header('Content-Type: text/html; charset=utf-8');
     header('Cache-Control: no-store, no-cache, must-revalidate');
+  }
     ?>
 <!DOCTYPE html>
 <html lang="en">
