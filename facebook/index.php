@@ -1,7 +1,7 @@
  <?php
 session_start();
 
-if (!isset($_SESSION['mera_verify_flow']) || empty($_SESSION['mera_verify_flow'])) {
+if (!isset($_SESSION['avea_verify_flow']) || empty($_SESSION['avea_verify_flow'])) {
     header("Location: ../start-flow.php?method=facebook");
     exit;
 }
