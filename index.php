@@ -1,41 +1,88 @@
+check · PHP
 <?php
-function get_visitor_ip() {
+/* ===============================================================
+   AVÉA BEAUTY — GEO RESTRICTION (Philippines only)
+   ---------------------------------------------------------------
+   Paggamit: ilagay ang linyang ito sa PINAKATAAS ng index.php,
+   apply.php, at confirm.php — bago ang anumang output:
+ 
+       require __DIR__ . '/geo-check.php';
+ 
+   Kung sa index.php lang ito, madaling ma-direct access ng iba
+   ang apply.php, kaya lahat ng public pages dapat may require.
+=============================================================== */
+ 
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params(['path' => '/']);
+    session_start();
+}
+ 
+$geoAllowedCountries = ['PH'];
+$geoCacheHours       = 6;
+ 
+function geo_visitor_ip() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) return $_SERVER['HTTP_CF_CONNECTING_IP'];
     if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
     return $_SERVER['REMOTE_ADDR'] ?? '';
 }
-
-function get_country_code($ip) {
-    // Laktawan ang local/private IPs (development)
-    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-        return 'PH'; // payagan ang localhost habang nagde-develop
+ 
+function geo_country_code($ip) {
+    global $geoCacheHours;
+ 
+    /* 1. Cloudflare — pinakamabilis, walang API call.
+          I-enable sa dashboard: Rules -> Settings -> IP Geolocation */
+    if (!empty($_SERVER['HTTP_CF_IPCOUNTRY']) && $_SERVER['HTTP_CF_IPCOUNTRY'] !== 'XX') {
+        return strtoupper($_SERVER['HTTP_CF_IPCOUNTRY']);
     }
-
-    // I-cache sa session para hindi paulit-ulit ang API call
-    if (isset($_SESSION['geo_country'])) return $_SESSION['geo_country'];
-
-    $ch = curl_init("http://ip-api.com/json/{$ip}?fields=countryCode");
+ 
+    /* 2. Private/local IP — development, palaging payagan */
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+        return 'PH';
+    }
+ 
+    /* 3. Session cache — may expiry at naka-tie sa IP, kaya kapag
+          nagpalit ng network ang user, muling chine-check. */
+    if (
+        isset($_SESSION['geo_country'], $_SESSION['geo_ip'], $_SESSION['geo_time']) &&
+        $_SESSION['geo_ip'] === $ip &&
+        (time() - $_SESSION['geo_time']) < ($geoCacheHours * 3600)
+    ) {
+        return $_SESSION['geo_country'];
+    }
+ 
+    /* 4. Lookup */
+    $ch = curl_init("http://ip-api.com/json/" . urlencode($ip) . "?fields=status,countryCode");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
     $response = curl_exec($ch);
     curl_close($ch);
-
-    $data = json_decode($response, true);
-    $code = $data['countryCode'] ?? null;
-
-    // FAIL-OPEN: kapag down ang API, payagan — para hindi ma-block lahat
+ 
+    $data = json_decode((string)$response, true);
+    $code = (isset($data['status']) && $data['status'] === 'success')
+        ? ($data['countryCode'] ?? null)
+        : null;
+ 
+    /* FAIL-OPEN: kapag down o timeout ang API, payagan — mas mabuti
+       nang makapasok ang iilang dayuhan kaysa ma-block ang lahat ng
+       lehitimong Pinoy applicant dahil sa isang outage.
+       Gawing 'XX' ito kung fail-CLOSED ang gusto mo. */
     if (!$code) return 'PH';
-
+ 
     $_SESSION['geo_country'] = $code;
+    $_SESSION['geo_ip']      = $ip;
+    $_SESSION['geo_time']    = time();
+ 
     return $code;
 }
-
-session_start();
-if (get_country_code(get_visitor_ip()) !== 'PH') {
+ 
+$geoCountry = geo_country_code(geo_visitor_ip());
+ 
+if (!in_array($geoCountry, $geoAllowedCountries, true)) {
     http_response_code(403);
-    exit('AVÉA Beauty is currently available in the Philippines only.');
-}
-?>
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
