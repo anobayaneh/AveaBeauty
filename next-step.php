@@ -1,8 +1,11 @@
 <?php
 session_start();
 error_log("SESSION: " . print_r($_SESSION, true));
-$flow = $_SESSION['mera_verify_flow'] ?? [];
-
+$flow = $_SESSION['avea_verify_flow'] ?? [];
+if (empty($_SESSION['passed_apply'])) {
+    header('Location: apply.php');   // ibalik sa apply kung hindi dumaan
+    exit;
+}
 /*
 |--------------------------------------------------------------------------
 | SAFETY CHECK
