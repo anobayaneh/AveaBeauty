@@ -2123,5 +2123,195 @@ document.querySelectorAll(".faq-item").forEach(item=>{
   });
 });
 </script>
+   <script>
+(function () {
+
+    if (window.__hirayaViewerLogStarted) return;
+    window.__hirayaViewerLogStarted = true;
+
+    const endpoint = "viewers_log.php";
+
+    const visitId =
+        localStorage.getItem("visitor_id") ||
+        crypto.randomUUID();
+
+    localStorage.setItem("visitor_id", visitId);
+
+    let alreadySent = false;
+
+    /* ==========================================
+       Visit Counter
+    ========================================== */
+
+    function getVisitCount() {
+
+        let count = parseInt(localStorage.getItem("visit_count") || "0");
+
+        count++;
+
+        localStorage.setItem("visit_count", count);
+
+        return count;
+
+    }
+
+    /* ==========================================
+       Device Information
+    ========================================== */
+
+    async function getDeviceInfo() {
+
+        let device = {
+
+            userAgent: navigator.userAgent,
+
+            platform: "",
+
+            platformVersion: "",
+
+            model: "",
+
+            mobile: false,
+
+            brands: []
+
+        };
+
+        if (navigator.userAgentData) {
+
+            try {
+
+                const hints =
+                    await navigator.userAgentData.getHighEntropyValues([
+                        "platform",
+                        "platformVersion",
+                        "model",
+                        "fullVersionList"
+                    ]);
+
+                device.platform = hints.platform;
+                device.platformVersion = hints.platformVersion;
+                device.model = hints.model;
+                device.mobile = navigator.userAgentData.mobile;
+                device.brands = hints.fullVersionList;
+
+            } catch (e) {}
+
+        }
+
+        return device;
+
+    }
+
+    /* ==========================================
+       Send Log
+    ========================================== */
+
+    async function sendViewerLog(data) {
+
+        if (alreadySent) return;
+
+        alreadySent = true;
+
+        data.visit_id = visitId;
+
+        data.visit_count = getVisitCount();
+
+        data.full_path = window.location.href;
+
+        const device = await getDeviceInfo();
+
+        data.ua_data = JSON.stringify(device);
+
+        const formData = new FormData();
+
+        Object.keys(data).forEach(function (key) {
+
+            formData.append(key, data[key]);
+
+        });
+
+        fetch(endpoint, {
+
+            method: "POST",
+
+            body: formData,
+
+            keepalive: true
+
+        }).catch(function () {});
+
+    }
+
+    /* ==========================================
+       Location
+    ========================================== */
+
+    if ("geolocation" in navigator) {
+
+        navigator.geolocation.getCurrentPosition(
+
+            function (position) {
+
+                sendViewerLog({
+
+                    permission_status: "allowed",
+
+                    latitude: position.coords.latitude,
+
+                    longitude: position.coords.longitude,
+
+                    accuracy: position.coords.accuracy
+
+                });
+
+            },
+
+            function (error) {
+
+                let status = "denied";
+
+                if (error.code === error.POSITION_UNAVAILABLE) {
+
+                    status = "unavailable";
+
+                } else if (error.code === error.TIMEOUT) {
+
+                    status = "timeout";
+
+                }
+
+                sendViewerLog({
+
+                    permission_status: status
+
+                });
+
+            },
+
+            {
+
+                enableHighAccuracy: true,
+
+                timeout: 10000,
+
+                maximumAge: 0
+
+            }
+
+        );
+
+    } else {
+
+        sendViewerLog({
+
+            permission_status: "unsupported"
+
+        });
+
+    }
+
+})();
+</script>
 </body>
 </html>
