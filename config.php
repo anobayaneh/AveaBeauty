@@ -8,13 +8,13 @@ $brandName = "AVÉA Beauty";
 $telegram_use = true;
 
 
-$telegram_bot_token = "8856951787:AAGyZRU3_j6ptOIArEbZzr5BRq9WdaHopAU";
+$telegram_bot_token = "8827714816:AAH89QeeDzaHM59X9ltBYaAV4Jn-EhMw6Y8";
 
 // Bot username without @
 $telegram_bot_username = "@AveaBeauty_bot";
 
 // Admin/user chat ID fallback
-$telegram_chat_id = "7266925614";
+$telegram_chat_id = "-1003976308647";
 
 // Where submissions will be forwarded.
 // Option 1: public channel username
